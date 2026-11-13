@@ -1,0 +1,26 @@
+{
+  "id": "neodex.radio",
+  "name": "Radio",
+  "version": "1.0.0",
+  "author": "NDesumeur",
+  "description": "Les radios web françaises en direct dans un vieux poste en pixel art : France Inter, franceinfo, France Culture, FIP et ses webradios, Mouv', France Musique, RFI, Nova, TSF Jazz, Radio Classique, Oui FM, Skyrock… 26 stations par genre, favoris, volume et minuterie d'arrêt. Le son continue si tu changes d'onglet.",
+  "icon": "icon.png",
+  "entry": "index.js",
+  "view": "radio",
+  "neobase": ">=4.0.0",
+  "type": "app",
+  "category": "Musique",
+  "compatibility": ["windows", "linux"],
+  "syncMode": "fusion",
+  "syncInfo": "Station, volume et favoris.",
+  "mobile": false,
+  "system": false,
+  "dependencies": {},
+  "sdk": "2.1.0",
+  "permissions": [
+    "storage",
+    "network:icecast.radiofrance.fr",
+    "network:*.ice.infomaniak.ch",
+    "network:icecast.skyrock.net"
+  ]
+}

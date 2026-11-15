@@ -28,3 +28,8 @@ La station, le volume et tes favoris sont enregistrés par NeoDex, sauvegardés 
 ## Installer
 
 Dans NeoDex : **NeoStore → À découvrir → Radio → Installer**.
+
+## Version 1.1.0
+
+- Une carte lisible par station : son nom, son genre, et le titre en cours pour celle que tu écoutes.
+- Titre en cours (morceau et artiste, ou émission) pour les 17 stations de Radio France qui le donnent, relu toutes les 30 secondes ; il défile sur l'écran du poste.

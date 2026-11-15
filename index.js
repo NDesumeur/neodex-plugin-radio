@@ -18,20 +18,24 @@ const CSS = `.gMain{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
 .gameBox canvas{height:min(46vh,380px);width:auto;aspect-ratio:240/120;image-rendering:pixelated;cursor:var(--cp,pointer)}
 .gSide{display:flex;flex-direction:column;gap:14px;flex:1;min-width:260px;max-width:420px}
 .gSide .sysCard{display:flex;flex-direction:column;gap:10px}
-.raList{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:18px}
-.raList .btn{justify-content:space-between;width:100%}`;
-// nom, adresse du flux, genre
+.raList{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:18px}
+.appWrap .raList .btn.raCard{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;width:100%;min-width:0;min-height:62px;padding:8px 12px 12px;overflow:hidden;text-align:left}
+.appWrap .raList .btn.raCard:active{padding:12px 12px 8px}
+.raCard>span{max-width:100%;overflow:hidden}
+.appWrap .raList .btn.raCard .pxV{white-space:normal;line-height:16px}
+.appWrap .raList .btn.main .hint{color:#3a2408}`;
+// nom, adresse du flux, genre, numéro de la station chez Radio France (pour le titre en cours)
 const RA_ST = [
-  ['France Inter', 'https://icecast.radiofrance.fr/franceinter-midfi.mp3', 'Info et culture'], ['franceinfo', 'https://icecast.radiofrance.fr/franceinfo-midfi.mp3', 'Info et culture'],
-  ['France Culture', 'https://icecast.radiofrance.fr/franceculture-midfi.mp3', 'Info et culture'], ['RFI Monde', 'https://rfimonde64k.ice.infomaniak.ch/rfimonde-64.mp3', 'Info et culture'],
-  ['FIP', 'https://icecast.radiofrance.fr/fip-midfi.mp3', 'Musique'], ['Radio Nova', 'https://novazz.ice.infomaniak.ch/novazz-128.mp3', 'Musique'], ['Oui FM', 'https://ouifm.ice.infomaniak.ch/ouifm-high.mp3', 'Rock'],
-  ['Mouv’', 'https://icecast.radiofrance.fr/mouv-midfi.mp3', 'Rap et hip-hop'], ['Skyrock', 'https://icecast.skyrock.net/s/natio_mp3_128k', 'Rap et hip-hop'], ['Radio Meuh', 'https://radiomeuh.ice.infomaniak.ch/radiomeuh-128.mp3', 'Musique'],
-  ['FIP Jazz', 'https://icecast.radiofrance.fr/fipjazz-midfi.mp3', 'Jazz'], ['TSF Jazz', 'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3', 'Jazz'], ['France Musique La Jazz', 'https://icecast.radiofrance.fr/francemusiquelajazz-midfi.mp3', 'Jazz'],
-  ['FIP Rock', 'https://icecast.radiofrance.fr/fiprock-midfi.mp3', 'Rock'], ['FIP Metal', 'https://icecast.radiofrance.fr/fipmetal-midfi.mp3', 'Rock'], ['FIP Pop', 'https://icecast.radiofrance.fr/fippop-midfi.mp3', 'Musique'],
-  ['FIP Electro', 'https://icecast.radiofrance.fr/fipelectro-midfi.mp3', 'Électro'], ['FIP Groove', 'https://icecast.radiofrance.fr/fipgroove-midfi.mp3', 'Musique'], ['FIP Hip-Hop', 'https://icecast.radiofrance.fr/fiphiphop-midfi.mp3', 'Rap et hip-hop'],
-  ['FIP Reggae', 'https://icecast.radiofrance.fr/fipreggae-midfi.mp3', 'Musique'], ['FIP Monde', 'https://icecast.radiofrance.fr/fipworld-midfi.mp3', 'Musique'], ['FIP Nouveautés', 'https://icecast.radiofrance.fr/fipnouveautes-midfi.mp3', 'Musique'],
-  ['France Musique', 'https://icecast.radiofrance.fr/francemusique-midfi.mp3', 'Classique'], ['Radio Classique', 'https://radioclassique.ice.infomaniak.ch/radioclassique-high.mp3', 'Classique'],
-  ['France Musique Baroque', 'https://icecast.radiofrance.fr/francemusiquebaroque-midfi.mp3', 'Classique'], ['France Musique Opéra', 'https://icecast.radiofrance.fr/francemusiqueopera-midfi.mp3', 'Classique'],
+  ['France Inter', 'https://icecast.radiofrance.fr/franceinter-midfi.mp3', 'Info et culture', 1], ['franceinfo', 'https://icecast.radiofrance.fr/franceinfo-midfi.mp3', 'Info et culture', 2],
+  ['France Culture', 'https://icecast.radiofrance.fr/franceculture-midfi.mp3', 'Info et culture', 5], ['RFI Monde', 'https://rfimonde64k.ice.infomaniak.ch/rfimonde-64.mp3', 'Info et culture'],
+  ['FIP', 'https://icecast.radiofrance.fr/fip-midfi.mp3', 'Musique', 7], ['Radio Nova', 'https://novazz.ice.infomaniak.ch/novazz-128.mp3', 'Musique'], ['Oui FM', 'https://ouifm.ice.infomaniak.ch/ouifm-high.mp3', 'Rock'],
+  ['Mouv’', 'https://icecast.radiofrance.fr/mouv-midfi.mp3', 'Rap et hip-hop', 6], ['Skyrock', 'https://icecast.skyrock.net/s/natio_mp3_128k', 'Rap et hip-hop'], ['Radio Meuh', 'https://radiomeuh.ice.infomaniak.ch/radiomeuh-128.mp3', 'Musique'],
+  ['FIP Jazz', 'https://icecast.radiofrance.fr/fipjazz-midfi.mp3', 'Jazz', 65], ['TSF Jazz', 'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3', 'Jazz'], ['France Musique La Jazz', 'https://icecast.radiofrance.fr/francemusiquelajazz-midfi.mp3', 'Jazz', 405],
+  ['FIP Rock', 'https://icecast.radiofrance.fr/fiprock-midfi.mp3', 'Rock', 64], ['FIP Metal', 'https://icecast.radiofrance.fr/fipmetal-midfi.mp3', 'Rock', 77], ['FIP Pop', 'https://icecast.radiofrance.fr/fippop-midfi.mp3', 'Musique'],
+  ['FIP Electro', 'https://icecast.radiofrance.fr/fipelectro-midfi.mp3', 'Électro', 74], ['FIP Groove', 'https://icecast.radiofrance.fr/fipgroove-midfi.mp3', 'Musique', 66], ['FIP Hip-Hop', 'https://icecast.radiofrance.fr/fiphiphop-midfi.mp3', 'Rap et hip-hop'],
+  ['FIP Reggae', 'https://icecast.radiofrance.fr/fipreggae-midfi.mp3', 'Musique', 71], ['FIP Monde', 'https://icecast.radiofrance.fr/fipworld-midfi.mp3', 'Musique', 69], ['FIP Nouveautés', 'https://icecast.radiofrance.fr/fipnouveautes-midfi.mp3', 'Musique', 70],
+  ['France Musique', 'https://icecast.radiofrance.fr/francemusique-midfi.mp3', 'Classique', 4], ['Radio Classique', 'https://radioclassique.ice.infomaniak.ch/radioclassique-high.mp3', 'Classique'],
+  ['France Musique Baroque', 'https://icecast.radiofrance.fr/francemusiquebaroque-midfi.mp3', 'Classique', 408], ['France Musique Opéra', 'https://icecast.radiofrance.fr/francemusiqueopera-midfi.mp3', 'Classique', 409],
 ];
 /* ---------- l'habillage pixel art, dessiné à la main : police bitmap (accents compris), cadres, boutons, icônes ----------
    Tout est en pixels pleins, agrandis par 2 sans lissage : aucun dégradé, aucune ombre floue. */
@@ -348,12 +352,29 @@ export default async function (ctx) {
   let saveT = null; const keep = () => { clearTimeout(saveT); saveT = setTimeout(() => folder.write('reglages', cfg).catch(() => {}), 500); };
   const audio = new Audio(); audio.preload = 'none'; audio.volume = cfg.vol / 100;
   let playing = false, loading = false, sleepAt = 0, g = null, tick = 0, err = '';
+  // le titre en cours : la ligne la plus fine du programme (le morceau et son artiste, sinon l'émission), relu toutes les 30 s pendant l'écoute
+  const raNowOf = (j, t = Date.now() / 1000) => {
+    for (const l of [...(j?.levels || [])].reverse()) {
+      const steps = l.items.map(id => j.steps?.[id]).filter(Boolean), s = steps.find(x => x.start <= t && t < x.end) || j.steps?.[l.items[l.position]];
+      if (s?.title) return s.title.trim() + (s.authors ? ' · ' + String(s.authors).trim() : '');
+    }
+    return '';
+  };
+  console.assert(raNowOf({levels: [{items: ['a'], position: 0}, {items: ['b', 'c'], position: 1}], steps: {a: {title: 'Émission', start: 0, end: 9e9}, b: {title: 'Vieux', start: 0, end: 1}, c: {title: 'Morceau', authors: 'Artiste', start: 1, end: 9e9}}}) === 'Morceau · Artiste', 'raNowOf');
+  let nowTxt = '', nowSt = -1, metaT = 0;
+  async function meta() {
+    clearTimeout(metaT); const st = cfg.st, id = RA_ST[st][3];
+    if (!playing || !id) { nowTxt = ''; nowSt = -1; return; }
+    try { const r = await fetch('https://api.radiofrance.fr/livemeta/pull/' + id); const t = r.ok ? raNowOf(await r.json()) : ''; if (st === cfg.st && playing && (t !== nowTxt || nowSt !== st)) { nowTxt = t; nowSt = st; render(); } } catch {}
+    metaT = setTimeout(meta, 30000);
+  }
   const genres = ['', '★', ...new Set(RA_ST.map(s => s[2]))];
   $('raGenre').replaceChildren(...genres.map(x => { const o = el('option', '', x === '' ? 'Toutes les stations' : x === '★' ? 'Mes favoris' : x); o.value = x; return o; })); $('raGenre').value = cfg.genre;
   $('raSleep').replaceChildren(...[[0, 'jamais'], [15, 'dans 15 min'], [30, 'dans 30 min'], [60, 'dans 1 h'], [90, 'dans 1 h 30']].map(([m, n]) => { const o = el('option', '', n); o.value = m; return o; }));
   const shown = () => RA_ST.map((s, i) => i).filter(i => !cfg.genre || (cfg.genre === '★' ? cfg.favs.includes(i) : RA_ST[i][2] === cfg.genre));
   function play(on = !playing) {
     playing = on; err = '';
+    nowTxt = ''; nowSt = -1; setTimeout(meta, 0);
     if (on) { audio.src = RA_ST[cfg.st][1]; loading = true; audio.play().catch(e => { if (playing) { err = 'Station injoignable'; playing = loading = false; render(); } }); }
     else { audio.pause(); audio.removeAttribute('src'); audio.load(); loading = false; }
     render();
@@ -364,7 +385,8 @@ export default async function (ctx) {
   function render() {
     $('raPlay').textContent = playing ? 'COUPER' : 'ÉCOUTER';
     $('raFav').textContent = (cfg.favs.includes(cfg.st) ? '★ ' : '☆ ') + 'FAVORI';
-    $('raList').replaceChildren(...shown().map(i => { const b = el('button', 'btn' + (i === cfg.st ? ' main' : '')); b.append(el('span', '', RA_ST[i][0]), el('span', 'hint', (cfg.favs.includes(i) ? '★ ' : '') + RA_ST[i][2])); b.onclick = () => { cfg.st = i; keep(); play(true); }; return b; }));
+    $('raList').replaceChildren(...shown().map(i => { const b = el('button', 'btn raCard' + (i === cfg.st ? ' main' : '')); b.append(el('span', '', (cfg.favs.includes(i) ? '★ ' : '') + RA_ST[i][0]), el('span', 'hint', RA_ST[i][2]));
+      if (i === nowSt && nowTxt) b.append(el('span', 'hint', '♪ ' + (nowTxt.length > 34 ? nowTxt.slice(0, 33) + '…' : nowTxt))); b.onclick = () => { cfg.st = i; keep(); play(true); }; return b; }));
   }
   // le poste : bois, haut-parleur, cadran avec l'aiguille, écran avec le nom et le volume
   function draw() {
@@ -381,7 +403,9 @@ export default async function (ctx) {
     px(g, '#0e0804', 116, 20, 100, 30); px(g, playing ? '#1e3a1a' : '#16221a', 118, 22, 96, 26);
     const s = RA_ST[cfg.st], name = s[0].length > 16 ? s[0].slice(0, 15) + '…' : s[0];
     PXK.fill(g, name, 166, 33, playing ? '#a8f0a0' : '#5a8a5a', 1, 'center');
-    PXK.fill(g, err || (loading ? 'Connexion…' : playing ? 'En direct · ' + s[2] : 'Arrêt'), 166, 45, err ? '#ff8a6a' : playing ? '#7ac87a' : '#4a6a4a', 1, 'center');
+    const line2 = err || (loading ? 'Connexion…' : playing ? (nowSt === cfg.st && nowTxt ? nowTxt : 'En direct · ' + s[2]) : 'Arrêt'), lw = PXK.layout(line2).w;
+    if (lw <= 92) PXK.fill(g, line2, 166, 45, err ? '#ff8a6a' : playing ? '#7ac87a' : '#4a6a4a', 1, 'center');
+    else { g.save(); g.beginPath(); g.rect(119, 36, 94, 12); g.clip(); PXK.fill(g, line2, 214 - (tick * .5) % (lw + 96), 45, '#7ac87a', 1); g.restore(); }  // trop long : il défile
     if (playing && !loading && tick % 60 < 30) px(g, '#ff5a3a', 208, 25, 3, 3);
     // le cadran et l'aiguille (la position de la station dans la liste)
     px(g, '#0e0804', 116, 56, 100, 22); px(g, '#e8d8b0', 118, 58, 96, 18);
@@ -419,5 +443,5 @@ export default async function (ctx) {
   let raf = 0; const frame = () => { if (!on()) { raf = 0; return; } raf = requestAnimationFrame(frame); draw(); };
   ctx.onOpen(() => { g ??= $('raCanvas').getContext('2d'); if (!raf) raf = requestAnimationFrame(frame); });
   setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; $('raSleep').value = '0'; if (playing) play(false); } }, 30000);  // la minuterie marche aussi onglet caché
-  $('raCanvas').__state = () => ({ playing, loading, err, t: audio.currentTime, st: RA_ST[cfg.st][0] });
+  $('raCanvas').__state = () => ({ playing, loading, err, t: audio.currentTime, st: RA_ST[cfg.st][0], now: nowSt === cfg.st ? nowTxt : '' });
 }

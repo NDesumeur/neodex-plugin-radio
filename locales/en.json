@@ -29,7 +29,6 @@
  "Station injoignable": "Station unreachable",
  " ne répond pas. Essaie une autre station.": " is not answering. Try another station.",
  "Ce plugin doit être approuvé par NeoDex pour s'ouvrir.": "This plugin must be approved by NeoDex to open.",
- "Les radios web françaises en direct dans un vieux poste en pixel art : France Inter, franceinfo, France Culture, FIP et ses webradios, Mouv', France Musique, RFI, Nova, TSF Jazz, Radio Classique, Oui FM, Skyrock… 26 stations par genre, favoris, volume et minuterie d'arrêt. Le son continue si tu changes d'onglet.": "French web radio live in an old pixel art set: France Inter, franceinfo, France Culture, FIP and its webradios, Mouv', France Musique, RFI, Nova, TSF Jazz, Radio Classique, Oui FM, Skyrock… 26 stations by genre, favourites, volume and sleep timer. Sound keeps playing if you switch tabs.",
  "Station, volume et favoris.": "Station, volume and favourites.",
  "Poste de radio": "Radio set",
  "France Inter": "France Inter",
@@ -115,5 +114,6 @@
  "le son ne part pas :": "no sound:",
  "la station ne change pas": "the station does not change",
  "ne se coupe pas": "does not stop",
- "a joué": "played"
+ "a joué": "played",
+ "Les radios web françaises en direct dans un vieux poste en pixel art : France Inter, franceinfo, France Culture, FIP et ses webradios, Mouv', France Musique, RFI, Nova, TSF Jazz, Radio Classique, Oui FM, Skyrock… 26 stations par genre, favoris, volume et minuterie d'arrêt. Le son continue si tu changes d'onglet. Le titre en cours s'affiche pour les stations de Radio France.": "French web radio live in an old pixel art set: France Inter, franceinfo, France Culture, FIP and its webradios, Mouv', France Musique, RFI, Nova, TSF Jazz, Radio Classique, Oui FM, Skyrock… 26 stations by genre, favourites, volume and sleep timer. Sound keeps playing if you switch tabs. The current track is shown for Radio France stations."
 }

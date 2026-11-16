@@ -1,9 +1,9 @@
 {
   "pluginId": "neodex.radio",
   "repo": "NDesumeur/neodex-plugin-radio",
-  "version": "1.0.0",
-  "sha256": "73b4dde00ac5849f3efc4e300885e4ae38b40f9c2c8870c28c6671642893953c",
-  "approvedAt": "2026-11-13T23:16:59.282Z",
+  "version": "1.1.0",
+  "sha256": "dad494e6bf499f2e6b250b4d85fec9aad33201ccb428f7e5bd4d361e3591db13",
+  "approvedAt": "2026-11-16T04:14:39.121Z",
   "neobase": ">=4.0.0",
-  "signature": "56AIHS4NQKZ35m8q1Hean/1hgfAcpj07W+Q2UpS7IhzA+eKkzdoe+XvsNpW2QJQxMn675AqAvUY6O0R9h/NkBQ=="
+  "signature": "SPKn5khx2Ju5MMNF7hAC19tWVv188WJ+4hA8EDqdNCUXwVxyBbik7WkkxACLWZqdVyvEn+UvzQFy1zuo/IMIAA=="
 }

@@ -1,5 +1,6 @@
 // Radio : des radios web françaises en direct, dans un vieux poste en pixel art. Favoris, volume, minuterie d'arrêt.
-// Le son vient directement des serveurs des radios (déclarés dans plugin.json). Il tourne dans le bac à sable de NeoDex.
+// Le son vient directement des serveurs des radios. Les radios du monde viennent de Radio-Browser (annuaire libre, 50 000 stations).
+// Il tourne dans le bac à sable de NeoDex, et continue onglet fermé tant qu'il joue (il le dit à NeoDex).
 const HTML = `<div class="appWrap wide">
   <div class="agHead"><span class="label">Radio</span><span class="hint">Espace : écouter ou couper · haut et bas : station · F : favori · + et − : volume</span></div>
   <div class="gMain"><div class="gameBox"><canvas id="raCanvas" width="240" height="120" role="img" aria-label="Poste de radio"></canvas></div>
@@ -10,6 +11,10 @@ const HTML = `<div class="appWrap wide">
         <div class="row"><span class="hint">Arrêt</span><select class="gSel" id="raSleep"></select></div>
       </div>
       <div class="row"><select class="gSel" id="raGenre"></select></div>
+      <div class="sysCard"><b>RADIOS DU MONDE</b>
+        <div class="row"><input class="gSel raQ" id="raQ" placeholder="Nom, ville ou style (jazz, Tokyo, BBC…)"><button class="btn" id="raGo">CHERCHER</button></div>
+        <div class="raHits" id="raHits"></div>
+      </div>
     </div></div>
   <div class="raList" id="raList"></div>
 </div>`;
@@ -23,7 +28,9 @@ const CSS = `.gMain{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
 .appWrap .raList .btn.raCard:active{padding:12px 12px 8px}
 .raCard>span{max-width:100%;overflow:hidden}
 .appWrap .raList .btn.raCard .pxV{white-space:normal;line-height:16px}
-.appWrap .raList .btn.main .hint{color:#3a2408}`;
+.appWrap .raList .btn.main .hint{color:#3a2408}
+.raQ{flex:1;min-width:0;background:#140c06;color:#fff0c8;border:2px solid #c0802a;padding:6px 8px;font:inherit}.raHits{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto}.raHits:empty{display:none}
+.appWrap .raHits .btn{flex:none;height:auto;min-height:48px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;width:100%;padding:8px 10px}.raHits .btn span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}`;
 // nom, adresse du flux, genre, numéro de la station chez Radio France (pour le titre en cours)
 const RA_ST = [
   ['France Inter', 'https://icecast.radiofrance.fr/franceinter-midfi.mp3', 'Info et culture', 1], ['franceinfo', 'https://icecast.radiofrance.fr/franceinfo-midfi.mp3', 'Info et culture', 2],
@@ -348,7 +355,10 @@ export default async function (ctx) {
     emblem: ['..........k.', '.........k..', '........k...', '.kkkkkkkkkk.', 'kooooooooook', 'kowkwkoaaaok', 'kokwkwoaaaok', 'kowkwkoaaaok', 'kokwkwoooook', 'kooooooooook', '.kkkkkkkkkk.', '.kk......kk.'],
     icons: [[/^ÉCOUTER|^COUPER/, 'play'], [/^ÉCOUTE$/, 'vol']] });
   const W = 240, H = 120;
-  const cfg = { st: 4, vol: 70, favs: [], genre: '', ...(await doc('reglages')) };
+  const cfg = { st: 4, vol: 70, favs: [], genre: '', world: [], ...(await doc('reglages')) };
+  const MONDE = 'Radios du monde', S = () => [...RA_ST, ...cfg.world.map(w => [w.n, w.u, MONDE, 0, w])];
+  const isFav = i => i < RA_ST.length ? cfg.favs.includes(i) : !!S()[i]?.[4]?.fav;
+  if (cfg.st >= S().length) cfg.st = 4;
   let saveT = null; const keep = () => { clearTimeout(saveT); saveT = setTimeout(() => folder.write('reglages', cfg).catch(() => {}), 500); };
   const audio = new Audio(); audio.preload = 'none'; audio.volume = cfg.vol / 100;
   let playing = false, loading = false, sleepAt = 0, g = null, tick = 0, err = '';
@@ -363,29 +373,31 @@ export default async function (ctx) {
   console.assert(raNowOf({levels: [{items: ['a'], position: 0}, {items: ['b', 'c'], position: 1}], steps: {a: {title: 'Émission', start: 0, end: 9e9}, b: {title: 'Vieux', start: 0, end: 1}, c: {title: 'Morceau', authors: 'Artiste', start: 1, end: 9e9}}}) === 'Morceau · Artiste', 'raNowOf');
   let nowTxt = '', nowSt = -1, metaT = 0;
   async function meta() {
-    clearTimeout(metaT); const st = cfg.st, id = RA_ST[st][3];
+    clearTimeout(metaT); const st = cfg.st, id = S()[st][3];
     if (!playing || !id) { nowTxt = ''; nowSt = -1; return; }
     try { const r = await fetch('https://api.radiofrance.fr/livemeta/pull/' + id); const t = r.ok ? raNowOf(await r.json()) : ''; if (st === cfg.st && playing && (t !== nowTxt || nowSt !== st)) { nowTxt = t; nowSt = st; render(); } } catch {}
     metaT = setTimeout(meta, 30000);
   }
-  const genres = ['', '★', ...new Set(RA_ST.map(s => s[2]))];
-  $('raGenre').replaceChildren(...genres.map(x => { const o = el('option', '', x === '' ? 'Toutes les stations' : x === '★' ? 'Mes favoris' : x); o.value = x; return o; })); $('raGenre').value = cfg.genre;
+  const genres = () => ['', '★', ...new Set(S().map(s => s[2]))];
+  const fillGenres = () => { $('raGenre').replaceChildren(...genres().map(x => { const o = el('option', '', x === '' ? 'Toutes les stations' : x === '★' ? 'Mes favoris' : x); o.value = x; return o; })); $('raGenre').value = cfg.genre; };
+  fillGenres();
   $('raSleep').replaceChildren(...[[0, 'jamais'], [15, 'dans 15 min'], [30, 'dans 30 min'], [60, 'dans 1 h'], [90, 'dans 1 h 30']].map(([m, n]) => { const o = el('option', '', n); o.value = m; return o; }));
-  const shown = () => RA_ST.map((s, i) => i).filter(i => !cfg.genre || (cfg.genre === '★' ? cfg.favs.includes(i) : RA_ST[i][2] === cfg.genre));
+  const shown = () => S().map((s, i) => i).filter(i => !cfg.genre || (cfg.genre === '★' ? isFav(i) : S()[i][2] === cfg.genre));
   function play(on = !playing) {
     playing = on; err = '';
     nowTxt = ''; nowSt = -1; setTimeout(meta, 0);
-    if (on) { audio.src = RA_ST[cfg.st][1]; loading = true; audio.play().catch(e => { if (playing) { err = 'Station injoignable'; playing = loading = false; render(); } }); }
+    ctx.host.playing?.(on);  // NeoDex garde la radio chargée même onglet fermé
+    if (on) { audio.src = S()[cfg.st][1]; loading = true; audio.play().catch(e => { if (playing) { err = 'Station injoignable'; playing = loading = false; render(); } }); }
     else { audio.pause(); audio.removeAttribute('src'); audio.load(); loading = false; }
     render();
   }
   audio.onplaying = () => { loading = false; };
-  audio.onerror = () => { if (playing) { err = 'Station injoignable'; playing = loading = false; render(); toast(RA_ST[cfg.st][0] + ' ne répond pas. Essaie une autre station.', true); } };
-  const tune = i => { cfg.st = (i + RA_ST.length) % RA_ST.length; keep(); if (playing) play(true); else render(); };
+  audio.onerror = () => { if (playing) { err = 'Station injoignable'; playing = loading = false; render(); toast(S()[cfg.st][0] + ' ne répond pas. Essaie une autre station.', true); } };
+  const tune = i => { cfg.st = (i + S().length) % S().length; keep(); if (playing) play(true); else render(); };
   function render() {
     $('raPlay').textContent = playing ? 'COUPER' : 'ÉCOUTER';
-    $('raFav').textContent = (cfg.favs.includes(cfg.st) ? '★ ' : '☆ ') + 'FAVORI';
-    $('raList').replaceChildren(...shown().map(i => { const b = el('button', 'btn raCard' + (i === cfg.st ? ' main' : '')); b.append(el('span', '', (cfg.favs.includes(i) ? '★ ' : '') + RA_ST[i][0]), el('span', 'hint', RA_ST[i][2]));
+    $('raFav').textContent = (isFav(cfg.st) ? '★ ' : '☆ ') + 'FAVORI';
+    $('raList').replaceChildren(...shown().map(i => { const st = S()[i], b = el('button', 'btn raCard' + (i === cfg.st ? ' main' : '')); b.append(el('span', '', (isFav(i) ? '★ ' : '') + st[0]), el('span', 'hint', st[4] ? [st[4].c, st[4].g].filter(Boolean).join(' · ') || MONDE : st[2]));
       if (i === nowSt && nowTxt) b.append(el('span', 'hint', '♪ ' + (nowTxt.length > 34 ? nowTxt.slice(0, 33) + '…' : nowTxt))); b.onclick = () => { cfg.st = i; keep(); play(true); }; return b; }));
   }
   // le poste : bois, haut-parleur, cadran avec l'aiguille, écran avec le nom et le volume
@@ -401,7 +413,7 @@ export default async function (ctx) {
     for (let y = 24; y < 98; y += 4) for (let x = 28; x < 104; x += 4) { const d = Math.hypot(x - 66, y - 61), pulse = amp && Math.sin(d / 5 - tick / 3) > .6; px(g, pulse ? '#8a7a5a' : '#a8946a', x, y, 2, 2); }
     // l'écran
     px(g, '#0e0804', 116, 20, 100, 30); px(g, playing ? '#1e3a1a' : '#16221a', 118, 22, 96, 26);
-    const s = RA_ST[cfg.st], name = s[0].length > 16 ? s[0].slice(0, 15) + '…' : s[0];
+    const s = S()[cfg.st], name = s[0].length > 16 ? s[0].slice(0, 15) + '…' : s[0];
     PXK.fill(g, name, 166, 33, playing ? '#a8f0a0' : '#5a8a5a', 1, 'center');
     const line2 = err || (loading ? 'Connexion…' : playing ? (nowSt === cfg.st && nowTxt ? nowTxt : 'En direct · ' + s[2]) : 'Arrêt'), lw = PXK.layout(line2).w;
     if (lw <= 92) PXK.fill(g, line2, 166, 45, err ? '#ff8a6a' : playing ? '#7ac87a' : '#4a6a4a', 1, 'center');
@@ -410,15 +422,44 @@ export default async function (ctx) {
     // le cadran et l'aiguille (la position de la station dans la liste)
     px(g, '#0e0804', 116, 56, 100, 22); px(g, '#e8d8b0', 118, 58, 96, 18);
     for (let i = 0; i <= 24; i++) px(g, '#5a4a2a', 120 + i * 4, i % 4 ? 70 : 66, 1, i % 4 ? 4 : 8);
-    { const x = 120 + Math.round(cfg.st / (RA_ST.length - 1) * 92); px(g, '#c8302a', x, 59, 1, 16); px(g, '#ff5a3a', x - 1, 59, 3, 2); }
+    { const x = 120 + Math.round(cfg.st / Math.max(1, S().length - 1) * 92); px(g, '#c8302a', x, 59, 1, 16); px(g, '#ff5a3a', x - 1, 59, 3, 2); }
     // les boutons : volume et accord
-    for (const [cx, v] of [[136, cfg.vol / 100], [196, cfg.st / (RA_ST.length - 1)]]) { px(g, '#0e0804', cx - 9, 84, 18, 18); px(g, '#3a2414', cx - 8, 85, 16, 16); px(g, '#5a3a22', cx - 7, 86, 14, 3); const a = -2.4 + v * 4.8; px(g, '#e8d8b0', cx + Math.sin(a) * 5 - 1, 93 - Math.cos(a) * 5 - 1, 2, 2); }
+    for (const [cx, v] of [[136, cfg.vol / 100], [196, cfg.st / Math.max(1, S().length - 1)]]) { px(g, '#0e0804', cx - 9, 84, 18, 18); px(g, '#3a2414', cx - 8, 85, 16, 16); px(g, '#5a3a22', cx - 7, 86, 14, 3); const a = -2.4 + v * 4.8; px(g, '#e8d8b0', cx + Math.sin(a) * 5 - 1, 93 - Math.cos(a) * 5 - 1, 2, 2); }
     PXK.fill(g, 'VOL', 136, 112, '#c8a878', 1, 'center'); PXK.fill(g, 'STATION', 196, 112, '#c8a878', 1, 'center');
     if (sleepAt) PXK.fill(g, 'arrêt ' + Math.ceil((sleepAt - Date.now()) / 60000) + ' min', 166, 94, '#e8d8b0', 1, 'center');
     if (tick % 30 === 0) g.canvas.setAttribute('aria-label', 'Radio : ' + s[0] + ', ' + (err || (loading ? 'connexion' : playing ? 'en direct' : 'arrêt')) + ', volume ' + cfg.vol + '.');
   }
   $('raPlay').onclick = () => { play(); $('raPlay').blur(); };
-  $('raFav').onclick = () => { const i = cfg.favs.indexOf(cfg.st); if (i < 0) cfg.favs.push(cfg.st); else cfg.favs.splice(i, 1); keep(); render(); };
+  $('raFav').onclick = () => { if (cfg.st >= RA_ST.length) { const w = S()[cfg.st][4]; w.fav = !w.fav; keep(); return render(); } const i = cfg.favs.indexOf(cfg.st); if (i < 0) cfg.favs.push(cfg.st); else cfg.favs.splice(i, 1); keep(); render(); };
+  // ---- les radios du monde : Radio-Browser, les stations qui marchent (vérifiées par l'annuaire), en https (le bac à sable n'accepte que ça), les plus aimées d'abord
+  const RB = ['de1', 'nl1', 'at1'].map(h => 'https://' + h + '.api.radio-browser.info/json/stations/search?hidebroken=true&order=votes&reverse=true&limit=60&');
+  async function rbSearch(q) {
+    for (const base of RB) {
+      try {
+        const get = async k => { const r = await fetch(base + k + '=' + encodeURIComponent(q)); if (!r.ok) throw new Error(r.status); return r.json(); };
+        const [a, b] = await Promise.all([get('name'), get('tag').catch(() => [])]), seen = new Set();
+        return [...a, ...b].filter(x => /^https:\/\//.test(x.url_resolved || '') && !seen.has(x.url_resolved) && seen.add(x.url_resolved)).slice(0, 30)
+          .map(x => ({n: String(x.name || '').trim().slice(0, 60) || 'Radio', u: x.url_resolved, c: x.country || '', g: String(x.tags || '').split(',')[0].replace(/^[-\s]+$/, '').slice(0, 24), b: +x.bitrate || 0}));
+      } catch {}
+    }
+    throw new Error('annuaire injoignable');
+  }
+  // une radio choisie rejoint « Radios du monde » : les 30 dernières, les favorites ne partent jamais
+  function addWorld(h) {
+    const cur = S()[cfg.st]; let i = cfg.world.findIndex(w => w.u === h.u);
+    if (i < 0) { cfg.world.push({n: h.n, u: h.u, c: h.c, g: h.g}); while (cfg.world.length > 30) { const k = cfg.world.findIndex(w => !w.fav); if (k < 0) break; cfg.world.splice(k, 1); } }
+    i = cfg.world.findIndex(w => w.u === h.u); if (cur && cur[1] !== h.u) cfg.st = Math.max(0, S().findIndex(s => s[1] === cur[1]));
+    fillGenres(); return RA_ST.length + i;
+  }
+  async function search() {
+    const q = $('raQ').value.trim(); if (!q) return; $('raHits').replaceChildren(el('span', 'hint', 'Recherche…'));
+    try {
+      const hits = await rbSearch(q);
+      $('raHits').replaceChildren(...(hits.length ? hits.map(h => { const b = el('button', 'btn'); b.append(el('span', '', h.n), el('span', 'hint', [h.c, h.g, h.b ? h.b + ' kb/s' : ''].filter(Boolean).join(' · ')));
+        b.onclick = () => { cfg.st = addWorld(h); keep(); play(true); }; return b; }) : [el('span', 'hint', 'Aucune radio trouvée.')]));
+    } catch (e) { $('raHits').replaceChildren(el('span', 'hint', 'Recherche impossible : ' + e.message)); }
+  }
+  $('raGo').onclick = search; $('raQ').onkeydown = e => { if (e.key === 'Enter') search(); };
   $('raVol').value = cfg.vol; $('raVol').oninput = e => { cfg.vol = +e.target.value; audio.volume = cfg.vol / 100; keep(); };
   $('raGenre').onchange = e => { cfg.genre = e.target.value; keep(); render(); };
   $('raSleep').onchange = e => { sleepAt = +e.target.value ? Date.now() + +e.target.value * 60000 : 0; };
@@ -443,5 +484,5 @@ export default async function (ctx) {
   let raf = 0; const frame = () => { if (!on()) { raf = 0; return; } raf = requestAnimationFrame(frame); draw(); };
   ctx.onOpen(() => { g ??= $('raCanvas').getContext('2d'); if (!raf) raf = requestAnimationFrame(frame); });
   setInterval(() => { if (sleepAt && Date.now() > sleepAt) { sleepAt = 0; $('raSleep').value = '0'; if (playing) play(false); } }, 30000);  // la minuterie marche aussi onglet caché
-  $('raCanvas').__state = () => ({ playing, loading, err, t: audio.currentTime, st: RA_ST[cfg.st][0], now: nowSt === cfg.st ? nowTxt : '' });
+  $('raCanvas').__state = () => ({ playing, loading, err, t: audio.currentTime, st: S()[cfg.st][0], world: cfg.world.length, now: nowSt === cfg.st ? nowTxt : '' });
 }

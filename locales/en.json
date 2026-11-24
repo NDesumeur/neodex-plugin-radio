@@ -120,5 +120,12 @@
  "Vieux": "Old",
  "Morceau": "Track",
  "Artiste": "Artist",
- "Morceau · Artiste": "Track · Artist"
+ "Morceau · Artiste": "Track · Artist",
+ "Nom, ville ou style (jazz, Tokyo, BBC…)": "Name, city or style (jazz, Tokyo, BBC…)",
+ "RADIOS DU MONDE": "WORLD RADIO",
+ "CHERCHER": "SEARCH",
+ "Radios du monde": "World radio",
+ "Recherche…": "Searching…",
+ "Aucune radio trouvée.": "No station found.",
+ "Recherche impossible :": "Search failed:"
 }

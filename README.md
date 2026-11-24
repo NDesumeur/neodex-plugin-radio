@@ -4,12 +4,21 @@ Les radios web françaises en direct, dans un vieux poste en pixel art.
 
 *English version: [README.en.md](README.en.md)*
 
+## Les radios du monde (nouveau en 1.2.0)
+
+Recherche dans Radio-Browser (plus de 50 000 radios) : nom, ville ou style ; les radios écoutées rejoignent ta liste. La radio continue onglet fermé.
+
 ## Les stations
 
 - **Info et culture** : France Inter, franceinfo, France Culture, RFI Monde.
 - **Musique** : FIP et ses webradios (Jazz, Rock, Metal, Pop, Electro, Groove, Hip-Hop, Reggae, Monde, Nouveautés), Radio Nova, Radio Meuh.
 - **Rap** : Mouv’, Skyrock · **Rock** : Oui FM · **Jazz** : TSF Jazz, France Musique La Jazz.
 - **Classique** : France Musique, Radio Classique, France Musique Baroque et Opéra.
+
+## Radios du monde
+
+La case **Radios du monde** cherche dans Radio-Browser, l'annuaire libre de plus de 50 000 radios : un nom, une ville ou un style (jazz, Tokyo, BBC…). Seules les stations qui marchent et en https sont proposées, les plus aimées d'abord. Une radio écoutée rejoint le genre « Radios du monde » de ta liste (les 30 dernières ; tes favorites restent). La radio continue de jouer quand tu fermes son onglet.
+
 
 ## Commandes
 
@@ -19,7 +28,7 @@ Les radios web françaises en direct, dans un vieux poste en pixel art.
 
 ## Autorisations
 
-Le son vient directement des serveurs des radios : **icecast.radiofrance.fr**, ***.ice.infomaniak.ch** (RFI, Nova, TSF Jazz, Radio Classique, Oui FM, Radio Meuh) et **icecast.skyrock.net**. Rien d’autre n’est envoyé.
+Depuis la version 1.2.0, Radio demande l’accès réseau à tous les sites : les radios du monde viennent de milliers de serveurs différents. Le son vient directement du serveur de chaque radio, et la recherche passe par Radio-Browser (api.radio-browser.info). Rien d’autre n’est envoyé.
 
 ## Données et synchronisation
 

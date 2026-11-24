@@ -28,10 +28,13 @@ module.exports = async ({ pj, js, sleep }) => {
   const world = w.st;
   await pj(`[...document.querySelectorAll('#raList .raCard')].find(c => c.textContent.trim().startsWith(${JSON.stringify(first)})).click(), 0`);  // de nouveau FIP, pour la capture
   for (let i = 0; i < 20 && !(await state()).now; i++) await sleep(500);
-  // onglet fermé : NeoDex sait que la radio joue (elle reste chargée), et le son continue
-  await js(`(closeTab(tabs.find(t => t.url === 'plugin:neodex.radio')), 0)`); await sleep(1500);
+  // onglet caché (on va sur l'accueil) : NeoDex sait que la radio joue, et le son continue
+  await js(`(showTab(null), 0)`); await sleep(1500);
   const bg = await js(`!!pluginHooks.get('neodex.radio')?.playing?.()`), st3 = await state();
-  if (!bg || !st3.playing) throw new Error('onglet fermé : la radio ne dit plus jouer · ' + JSON.stringify({bg, st3}));
-  await js(`(newTab('plugin:neodex.radio'), 0)`); await sleep(800);
+  if (!bg || !st3.playing) throw new Error('onglet caché : la radio ne dit plus jouer · ' + JSON.stringify({bg, st3}));
+  // onglet fermé (NeoDex 3.4.3) : la radio s'arrête, son cadre est retiré
+  await js(`(closeTab(tabs.find(t => t.url === 'plugin:neodex.radio')), 0)`); await sleep(2200);
+  if (await js(`[...pluginFrames.values()].some(e => e.id === 'neodex.radio' && !e.widget)`)) throw new Error('onglet fermé : la radio tourne encore');
+  await js(`(newTab('plugin:neodex.radio'), 0)`); await sleep(1500);
   return first + ' (« ' + now + ' ») a joué ' + s.t.toFixed(1) + ' s, puis ' + s2.st + ' · monde : ' + world + ' a joué ' + w.t.toFixed(1) + ' s';
 };
